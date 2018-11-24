@@ -6,6 +6,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
+
     gtag('config', 'UA-83335614-3');
   </script>
 
@@ -20,9 +21,8 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <link href="style.css" rel="stylesheet">
-
+  <script src="murmurhash2_32_gc.js"></script>
 </head>
-
 <body>
   <!-- The Modal -->
   <div id="myModal" class="modal">
@@ -41,10 +41,8 @@
   </div>
 
   <!-- Snackbar inside the body -->
-  <div id="snackbar-body" class="snackbar">
-    <i class="material-icons mdl-shadow--2dp" style="color:red; vertical-align:middle;">highlight_off</i> 
-    URL not correct !
-  </div>
+  <div id="snackbar-body" class="snackbar"><i class="material-icons mdl-shadow--2dp" style="color:red; vertical-align:middle;">highlight_off</i> URL not correct !</div>
+
   <div class="site-wrapper">
     <div class="site-wrapper-inner">
       <div class="main-container">
@@ -52,6 +50,8 @@
           <span class="glyphicon glyphicon-link"></span>
           <h1>URL Shortener</h1>
           <h4><a href="http://www.victormeunier.com">Victor Meunier</a></h4>
+
+
           <div class="row">
             <div class="col-lg-12">
               <div class="input-group input-group-lg">
@@ -68,9 +68,13 @@
         </div>
       </div>
     </div>
-
     <!-- FOOTER -->
     <div class="footer">
+      <div>
+          Want to donate ? </br>
+          <img class="qr-code" src="ETH_public.png" alt="ETH QR code"> </br>
+          ETH address : 0xa24e4d9eddc3310cfa6d02d632988300745f5943        
+        </div>
       Credits to <a href="http://shrinkr.herokuapp.com/">shrinkr.herokuapp.com</a> for the HTML/CSS </br>
       Victor Meunier - 2018 </br>
       <a href="http://www.victormeunier.com">Visit my website</a>
@@ -78,8 +82,201 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
-  <script src="murmurhash2_32_gc.js"></script>
+  <script>
+    var URLs_str = '{ "URLs" : []}';
+    var URLS = JSON.parse(URLs_str);
+    let longURL = "";
+    let shortMURMUR;
+    let shortURL_MURMUR;
+
+    const button_shorten = document.getElementById('btn-shorten');
+    const result = document.querySelector('.modal-body');
+    /*const domain = "http://localhost";*/
+    const domain = "http://redu.me";
+    const req_domain ="http://redu.me"
+    const port = "8081";
+
+    function calculate(urlToShorten){
+      /* Check if URL is not too short */
+      if(urlToShorten.length < 5 || !isURL(urlToShorten)){
+        //store the not valid URL to see if what it is
+        console.log("URL not correct");
+        showSnackbarBody("URL not correct !");
+        return;
+      }
+      longURL = urlToShorten;
+
+      var seed = (new Date).getTime() * Math.random();
+
+      /* Create hash and short url */
+      shortMURMUR = (Math.abs(murmurhash2_32_gc(longURL, seed))).toString();
+      shortURL_MURMUR = domain + "/" + shortMURMUR;
+
+      /* SEND TO SERVER */
+      /* Create JSON */
+      var urls_JSON = JSON.stringify({"longURL":longURL,"shortURL":shortMURMUR,"date":""});
+
+      /* Create and send request */
+      request= new XMLHttpRequest();
+      request.open("POST", req_domain + "/addURL", true);
+      request.setRequestHeader("cache-control", "no-cache");
+      request.setRequestHeader("Content-type", "application/json;charset=UTF-8");
+      request.send(urls_JSON);
+
+
+      // Set html result of the modal
+      result.innerHTML = `<span class="box-result">
+                            ${shortURL_MURMUR}
+                            <button class="button-copy" onclick="copy()" onmouseout="outFunc()" style="font-size:24px">
+                              <i class="material-icons">content_copy</i>
+                            </button>
+                            <div class="tooltip">
+                              <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
+                            </div>
+                          </span>
+                          <span class="info">
+                            <p>
+                            Your link will be stored 60 days, unless you use it. </br>
+                            Each time you use the sort URL, the timer resets.</br>
+                            </p>
+                          </span>
+                          <!-- The actual snackbar -->
+                          <div id="snackbar" class="snackbar"><i class="material-icons mdl-shadow--2dp" style="color:green; vertical-align:middle;">check</i> URL copied !</div>
+                        `;
+      openModal();
+    }
+
+    function store(longURL, shortURL){
+      URLS['URLs'].unshift({"longURL":longURL,"shortURL":shortURL}); //Add at first pos
+      URLS_str = JSON.stringify(URLS);
+      localStorage.setItem("urls", URLS_str);
+    }
+
+    function retrieve(url_short){
+      const url = url_short;
+      URLS_str = localStorage.getItem("urls");
+      URLS = JSON.parse(URLS_str);
+      for (i = 0; i < URLS.URLs.length; i++) {
+        if(URLS.URLs[i].shortURL == url){
+          return URLS.URLs[i].longURL;
+        }
+      }
+    }
+
+    // Get the modal
+    var modal = document.getElementById('myModal');
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    function openModal(){
+      // When the user clicks on the button, open the modal
+      modal.style.display = "block";
+    }
+
+    function closeModal(){
+      modal.style.display = "none";
+    }
+
+
+    function copy() {
+      /* Little trick to copy an element to the client clipboard
+      Create a dummy element in wich will put what we want to Copy
+      We select it and execute the commande 'copy'
+      Then we remove the dummy element */
+      var dummy = document.createElement('input');
+      dummy.setAttribute('value', shortURL_MURMUR);
+      document.body.appendChild(dummy);
+      dummy.select();
+      document.execCommand('copy');
+      document.body.removeChild(dummy)
+
+      /* Alert the copied text */
+      showSnackbar("URL copied !");
+      var tooltip = document.getElementById("myTooltip");
+      tooltip.innerHTML = "Copied: " + shortURL_MURMUR;
+    }
+
+    function showSnackbar(message) {
+      // Get the snackbar DIV
+      var x = document.getElementById("snackbar");
+      // Apply wanted text
+      x.text = message;
+      // Add the "show" class to DIV
+      x.className = "show";
+      // After 3 seconds, remove the show class from DIV
+      setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+    }
+
+    function showSnackbarBody(message) {
+      // Get the snackbar DIV
+      var x = document.getElementById("snackbar-body");
+      // Apply wanted text
+      x.text = message;
+      // Add the "show" class to DIV
+      x.className = "show";
+      // After 3 seconds, remove the show class from DIV
+      setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+    }
+
+    function outFunc() {
+      var tooltip = document.getElementById("myTooltip");
+      tooltip.innerHTML = "Copy to clipboard";
+    }
+
+    function isURL(string) {
+      var protocolAndDomainRE = /^(?:\w+:)?\/\/(\S+)$/;
+      var localhostDomainRE = /^localhost[\:?\d]*(?:[^\:?\d]\S*)?$/
+      var nonLocalhostDomainRE = /^[^\s\.]+\.\S{2,}$/;
+
+      if (typeof string !== 'string') {
+        return false;
+      }
+
+      var match = string.match(protocolAndDomainRE);
+      if (!match) {
+        return false;
+      }
+
+      var everythingAfterProtocol = match[1];
+      if (!everythingAfterProtocol) {
+        return false;
+      }
+
+      if (localhostDomainRE.test(everythingAfterProtocol) ||
+        nonLocalhostDomainRE.test(everythingAfterProtocol)) {
+        return true;
+      }
+
+      return false;
+    }
+
+    button_shorten.addEventListener('click', () => {
+      url = document.getElementById("url-field").value;
+      calculate(url);
+    });
+
+    window.addEventListener('keydown', (e)=> {
+      if(e.keyCode != 13) return; //exit if not "enter"
+      url = document.getElementById("url-field").value;
+      calculate(url);
+    });
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+      closeModal();
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+          closeModal();
+      }
+    }
+
+  </script>
+
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   
