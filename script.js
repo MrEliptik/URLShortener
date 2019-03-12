@@ -1,5 +1,4 @@
 var URLs_str = '{ "URLs" : []}';
-var URLS = JSON.parse(URLs_str);
 let longURL = "";
 let shortMURMUR;
 let shortURL_MURMUR;
@@ -94,17 +93,6 @@ function openModal(){
 
 function closeModal(){
     modal.style.display = "none";
-}
-
-function showSnackbar(message) {
-    // Get the snackbar DIV
-    var x = document.getElementById("snackbar");
-    // Apply wanted text
-    x.text = message;
-    // Add the "show" class to DIV
-    x.className = "show";
-    // After 3 seconds, remove the show class from DIV
-    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
 }
 
 function showSnackbarBody(message) {
