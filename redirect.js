@@ -1,7 +1,6 @@
 const http  = require('http');
 const url   = require("url");
 const fs    = require('fs');
-const path  = require('path');
 
 "use strict";
 
@@ -196,7 +195,6 @@ function addDate(urls_JSON){
 function resetDate(shortURL){
   const url = shortURL;
   var URLS_JSON = JSON.parse(fs.readFileSync('./urls.json', 'utf8'));
-  let res = -1;
 
   for (i = 0; i < URLS_JSON.URLs.length; i++) {
     if(URLS_JSON.URLs[i].shortURL == url){

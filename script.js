@@ -8,7 +8,7 @@ let shortURL_MURMUR;
 /*const domain = "http://localhost";*/ 
 const domain = "http://redu.me";
 const req_domain ="http://redu.me"
-const port = "8081";
+//const port = "8081";
 
 /* --------------------------- PAGE ELEMENTS -----------------------------------*/
 
@@ -16,8 +16,6 @@ const button_shorten    = document.getElementById('btn-shorten');
 const result            = document.querySelector('.modal-body');
 // Get the modal
 var modal               = document.getElementById('myModal');
-// Get the button that opens the modal
-var btn                 = document.getElementById("myBtn");
 // Get the <span> element that closes the modal
 var span                = document.getElementsByClassName("close")[0];
 
@@ -76,42 +74,6 @@ function calculate(urlToShorten){
     openModal();
 }
 
-function store(longURL, shortURL){
-    //Add at first position
-    URLS['URLs'].unshift({"longURL":longURL,"shortURL":shortURL}); 
-    URLS_str = JSON.stringify(URLS);
-    localStorage.setItem("urls", URLS_str);
-}
-
-function retrieve(url_short){
-    const url = url_short;
-    URLS_str = localStorage.getItem("urls");
-    URLS = JSON.parse(URLS_str);
-    for (i = 0; i < URLS.URLs.length; i++) {
-        if(URLS.URLs[i].shortURL == url){
-            return URLS.URLs[i].longURL;
-        }
-    }
-}
-
-function copy() {
-    /* Little trick to copy and element to the client clipboard
-    Create a dummy element in wich will put what we want to Copy
-    We select it and execute the commande 'copy'
-    Then we remove the dummy element */
-    var dummy = document.createElement('input');
-    dummy.setAttribute('value', shortURL_MURMUR);
-    document.body.appendChild(dummy);
-    dummy.select();
-    document.execCommand('copy');
-    document.body.removeChild(dummy)
-
-    /* Alert the copied text */
-    showSnackbar("URL copied !");
-    var tooltip = document.getElementById("myTooltip");
-    tooltip.innerHTML = "Copied: " + shortURL_MURMUR;
-}
-
 function isURL(str) {
     var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name and extension
@@ -154,11 +116,6 @@ function showSnackbarBody(message) {
     x.className = "show";
     // After 3 seconds, remove the show class from DIV
     setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-}
-
-function outFunc() {
-    var tooltip = document.getElementById("myTooltip");
-    tooltip.innerHTML = "Copy to clipboard";
 }
 
 
