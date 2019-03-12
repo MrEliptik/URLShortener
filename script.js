@@ -1,4 +1,3 @@
-var URLs_str = '{ "URLs" : []}';
 let longURL = "";
 let shortMURMUR;
 let shortURL_MURMUR;
