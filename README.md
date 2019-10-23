@@ -1,6 +1,8 @@
 # URLShortener
 A NodeJS based web application to shorten URLs. 
 
+![url shortener webpage](urlshortener.jpg)
+
 ## Author
 
 - Victor Meunier - victormeunier.dev@gmail.com
